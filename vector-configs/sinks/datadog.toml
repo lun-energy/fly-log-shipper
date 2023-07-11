@@ -1,11 +1,35 @@
+[transforms.datadog_remap]
+type = "remap"
+inputs = ["datadog_filter"]
+source = '''
+  .fly.app.name = string!(.fly.app.name)
+  if ends_with(.fly.app.name, "-stage") {
+    .env = "staging"
+  } else {
+    .env = "production"
+  }
+  .service = replace(.fly.app.name, "-stage", "")
+  if .service == "lun-backend" {
+    .ddsource = "go"
+  }
+  .hostname = .fly.host
+'''
+
+[transforms.datadog_filter]
+type = "filter"
+inputs = ["log_json"]
+#condition = { type = "vrl", source = ".fly.app.name == \"lun-backend\" || .fly.app.name == \"lun-backend-stage\"" }
+## No builders, no dbs atm.
+## Later we should allow dbs, and index out the spam.
+condition = { type = "vrl", source = "!starts_with(to_string!(.fly.app.name), \"fly-builder\") && !ends_with(to_string!(.fly.app.name), \"db\")" }
+
 [sinks.datadog]
-  # General
-  type = "datadog_logs" # required
-  inputs = ["log_json"] # required
-  default_api_key = "${DATADOG_API_KEY}" # required
-  site = "${DATADOG_SITE:-datadoghq.com}" # optional
-  compression = "gzip" # optional, default
+# General
+type = "datadog_logs"                   # required
+inputs = ["datadog_remap"]              # required
+default_api_key = "${DATADOG_API_KEY}"  # required
+site = "${DATADOG_SITE:-datadoghq.com}" # optional
+compression = "gzip"                    # optional, default
 
-  # Healthcheck
-  healthcheck.enabled = true # optional, default
-
+# Healthcheck
+healthcheck.enabled = true # optional, default

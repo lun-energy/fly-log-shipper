@@ -1,5 +1,17 @@
-app = "fly-log-shipper-example"
+# fly.toml app configuration file generated for lun-log-shipper on 2023-07-10T11:23:57+02:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "lun-log-shipper"
+primary_region = "fra"
 
 [metrics]
-  port = 9598
-  path = "/metrics"
+port = 9598
+path = "/metrics"
+
+[http_service]
+http_checks = []
+internal_port = 8686
+auto_stop_machines = false
+auto_start_machines = false
