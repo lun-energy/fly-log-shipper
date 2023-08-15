@@ -12,6 +12,9 @@ source = '''
   if .service == "lun-backend" {
     .ddsource = "go"
   }
+  if .service == "lun-kelvin" {
+    .ddsource = "kelvin"
+  }
   .hostname = .fly.host
 '''
 
