@@ -3,17 +3,12 @@ type = "remap"
 inputs = ["datadog_filter"]
 source = '''
   .fly.app.name = string!(.fly.app.name)
-  if ends_with(.fly.app.name, "-stage") {
-    .env = "staging"
-  } else {
-    .env = "production"
-  }
   .service = replace(.fly.app.name, "-stage", "")
   if .service == "lun-backend" {
     .ddsource = "go"
   }
   if .service == "lun-kelvin" {
-    .ddsource = "kelvin"
+    .ddsource = "typescript"
   }
   .hostname = .fly.host
 '''
@@ -22,9 +17,8 @@ source = '''
 type = "filter"
 inputs = ["log_json"]
 #condition = { type = "vrl", source = ".fly.app.name == \"lun-backend\" || .fly.app.name == \"lun-backend-stage\"" }
-## No builders, no dbs atm.
-## Later we should allow dbs, and index out the spam.
-condition = { type = "vrl", source = "!starts_with(to_string!(.fly.app.name), \"fly-builder\") && !ends_with(to_string!(.fly.app.name), \"db\")" }
+## No builders
+condition = { type = "vrl", source = "!starts_with(to_string!(.fly.app.name), \"fly-builder\")" }
 
 [sinks.datadog]
 # General
