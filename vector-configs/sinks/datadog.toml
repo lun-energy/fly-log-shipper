@@ -3,13 +3,28 @@ type = "remap"
 inputs = ["datadog_filter"]
 source = '''
   .fly.app.name = string!(.fly.app.name)
-  .service = replace(.fly.app.name, "-stage", "")
-  if .service == "lun-backend" {
-    .ddsource = "go"
+  if !exists(.service) {
+    .service = replace(.fly.app.name, "-stage", "")
   }
-  if .service == "lun-kelvin" {
-    .ddsource = "typescript"
+  if !exists(.env) {
+    if contains(.fly.app.name, "-stage") {
+      .env = "staging"
+    } else {
+      .env = "production"
+    }
   }
+  
+  if !exists(.ddsource) {
+    if .service == "lun-backend" {
+      .ddsource = "go"
+    } else if .service == "lun-kelvin" {
+      .ddsource = "typescript"
+
+    } else if ends_with(.fly.app.name, "-db") {
+      .ddsource = "postgresql"
+    }
+  }
+
   .hostname = .fly.host
 '''
 
